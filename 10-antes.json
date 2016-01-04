@@ -1,16 +1,16 @@
 {
   "1BB": {
-    "SB":"100.0%, Any two",
-    "BTN":"100.0%, Any two",
-    "CO":"100.0%, Any two",
-    "HJ":"100.0%, Any two",
-    "BTN3":"100.0%, Any two",
-    "BTN4":"100.0%, Any two",
-    "BTN5":"100.0%, Any two",
-    "BTN6":"100.0%, Any two"
+    "SB":"100.0%, Any-two",
+    "BTN":"100.0%, Any-two",
+    "CO":"100.0%, Any-two",
+    "HJ":"100.0%, Any-two",
+    "BTN3":"100.0%, Any-two",
+    "BTN4":"100.0%, Any-two",
+    "BTN5":"100.0%, Any-two",
+    "BTN6":"100.0%, Any-two"
   },
   "2BB": {
-    "SB":"100.0%, Any two",
+    "SB":"100.0%, Any-two",
     "BTN":"84.6%, 22+ Tx+ 92s+ 95o+ 82s+ 85o+ 73s+ 75o+ 62s+ 64o+ 52s+ 54o 43s",
     "CO":"85.2%, 22+ Jx+ T2s+ T3o+ 92s+ 95o+ 82s+ 85o+ 72s+ 74o+ 62s+ 64o+ 52s+ 54o 42s+",
     "HJ":"78.3%, 22+ Qx+ J2s+ J3o+ T2s+ T6o+ 92s+ 96o+ 82s+ 85o+ 73s+ 75o+ 63s+ 65o 52s+ 54o 42s+",

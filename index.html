@@ -4,48 +4,70 @@
   <meta charset="utf-8">
   <title>Push-Fold</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://rawgit.com/rzajac/angularjs-slider/master/dist/rzslider.min.css">
   <style>
     body {
       font-family: Verdana;
       margin: 10px;
+      min-width: 320px;
     }
-    .btn:active,
-    .btn:focus,
-    .btn:active:focus {
-      outline: none;
-    }
-    .input-group {
-      margin-bottom: 10px;
-    }
-    .input-group-addon {
-      min-width:96px;
-    }
-    .input-group-btn {
+    .main-content-table {
       width: 100%;
+    }
+    .stack-size-slider {
+      height: 300px;
+      width: 60px;
+    }
+    .range {
+      float: left;
+      width: 100%;
+    }
+    .hand-chart td {
+      height: 16px;
+      width: 16px;
+      text-align: center;
+    }
+    .push {
+      background-color: #8DB600;
     }
   </style>
 
-  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.11/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.14.3/ui-bootstrap-tpls.js"></script>
+  <script src="https://rawgit.com/rzajac/angularjs-slider/master/dist/rzslider.js"></script>
 
   <script type="text/javascript">
-    var app = angular.module('pushFoldApp', []);
+    var app = angular.module('pushFoldApp', ['rzModule', 'ui.bootstrap']);
 
     app.controller('PushFoldCtrl', function ($scope, $http) {
       $scope.antes = ['0', '10', '125', '20'];
-      $scope.antesLabels = {
-        '0': 'No antes',
-        '10': '10% antes',
-        '125': '12.5% antes',
-        '20': '20% antes'
-      };
       $scope.positions = ['SB', 'BTN', 'CO', 'HJ', 'BTN3', 'BTN4', 'BTN5', 'BTN6'];
-      $scope.stackSizes1 = ['1BB', '2BB', '3BB', '4BB', '5BB', '6BB', '7BB'];
-      $scope.stackSizes2 = ['8BB', '9BB', '10BB', '11BB', '12BB', '13BB', '14BB'];
-      $scope.stackSizes3 = ['15BB', '16BB', '17BB', '18BB', '19BB', '20BB'];
+      $scope.stackSizes = ['1BB', '2BB', '3BB', '4BB', '5BB', '6BB', '7BB', '8BB', '9BB', '10BB', '11BB', '12BB', '13BB', '14BB', '15BB', '16BB', '17BB', '18BB', '19BB', '20BB'];
 
-      $scope.selectedAntes = '0';
-      $scope.selectedStackSize = '1BB';
-      $scope.selectedPosition = 'SB';
+      $scope.antes_slider = {
+        value: 0,
+        options: {
+          showTicksValues: true,
+          stepsArray: ['0%', '10%', '12.5%', '20%']
+        }
+      };
+
+      $scope.stack_size_slider = {
+        value: 0,
+        options: {
+          showTicksValues: true,
+          stepsArray: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'],
+          vertical: true
+        }
+      };
+
+      $scope.position_slider = {
+        value: 0,
+        options: {
+          showTicksValues: true,
+          stepsArray: ['SB', 'BTN', 'CO', 'HJ', 'BTN3', 'BTN4', 'BTN5', 'BTN6']
+        }
+      };
 
       $scope.data = {};
 
@@ -67,71 +89,202 @@
         });
 
       $scope.getData = function(antes, stackSize, position) {
-        if (typeof $scope.data[antes] !== 'undefined') {
-          return $scope.data[antes][stackSize][position];
+        if (typeof $scope.data[antes] === 'undefined') {
+          return '';
         }
 
-        return '';
+        return $scope.data[antes][stackSize][position];
       };
 
-      $scope.setAntes = function(antes) {
-        $scope.selectedAntes = antes;
-      };
+      $scope.rankIndexMap = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
 
-      $scope.setStackSize = function(stackSize) {
-        $scope.selectedStackSize = stackSize;
-      };
+      var chart = [
+        [0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0]
+      ];
 
-      $scope.setPosition = function(position) {
-        $scope.selectedPosition = position;
-      };
+      $scope.getChart = function(antes, stackSize, position) {
+        if (typeof $scope.data[antes] === 'undefined') {
+          return '';
+        }
 
+        var resetChart = function(chart) {
+          for (var i = 0; i <= 12; i++) {
+            for (var j = 0; j <= 12; j++) {
+              chart[i][j] = 0;
+            }
+          }
+          return chart;
+        };
+
+        chart = resetChart(chart);
+
+        var selectAllHands = function(chart) {
+          for (var i = 0; i <= 12; i++) {
+            for (var j = 0; j <= 12; j++) {
+              chart[i][j] = 1;
+            }
+          }
+          return chart;
+        };
+
+        var range = $scope.getData(antes, stackSize, position);
+        var split = range.split(',');
+        var hands = split[1].split(' ');
+
+        var selectColumnDown = function(col, row, chart) {
+          for (var i = 0; i <= row; i++) {
+            chart[i][col] = 1;
+          }
+          return chart;
+        };
+        var selectRowAcross = function(col, row, chart) {
+          for (var i = 0; i <= col; i++) {
+            chart[row][i] = 1;
+          }
+          return chart;
+        };
+        var selectSuitedHands = function(col, row, chart) {
+          for (var i = col; i > row; i--) {
+            chart[row][i] = 1;
+          }
+          return chart;
+        };
+        var selectSuitedRange = function(col1, row1, col2, row2, chart) {
+          for (var i = col2; i >= col1; i--) {
+            for (var j = row2; j >= row1; j--) {
+              chart[j][i] = 1;
+            }
+          }
+          return chart;
+        };
+        var selectOffSuitHands = function(col, row, chart) {
+          for (var i = row; i > col; i--) {
+            chart[i][col] = 1;
+          }
+          return chart;
+        };
+        var selectSingleHand = function(col, row, chart) {
+          chart[row][col] = 1;
+          return chart;
+        };
+        var selectPairs = function(rank, chart) {
+          for (var i = rank; i >= 0; i--) {
+            chart[i][i] = 1;
+          }
+          return chart;
+        };
+        var rankMap = {
+          A:0,
+          K:1,
+          Q:2,
+          J:3,
+          T:4,
+          '9':5,
+          '8':6,
+          '7':7,
+          '6':8,
+          '5':9,
+          '4':10,
+          '3':11,
+          '2':12
+        };
+
+        hands.forEach(function(hand) {
+          if (hand === 'Any-two') {
+            return selectAllHands(chart);
+          }
+
+          if (hand[0] === hand[1]) {
+            chart = selectPairs(rankMap[hand[0]], chart);
+          }
+
+          if (hand.indexOf('x+') > -1) {
+            for (var i = rankMap[hand[0]]; i >= 0; i--) {
+              chart = selectColumnDown(i, 12, chart);
+              chart = selectRowAcross(12, i, chart);
+            }
+          }
+
+          if (hand.indexOf('-') > -1) {
+            chart = selectSuitedRange(rankMap[hand[1]], rankMap[hand[0]], rankMap[hand[5]], rankMap[hand[4]], chart);
+          } else {
+            if (hand.indexOf('s') === 2) {
+              if (hand.indexOf('s+') === 2) {
+                chart = selectSuitedHands(rankMap[hand[1]], rankMap[hand[0]], chart);
+              } else {
+                chart = selectSingleHand(rankMap[hand[1]], rankMap[hand[0]], chart);
+              }
+            }
+            if (hand.indexOf('o') === 2) {
+              if (hand.indexOf('o+') === 2) {
+                chart = selectOffSuitHands(rankMap[hand[0]], rankMap[hand[1]], chart);
+              } else {
+                chart = selectSingleHand(rankMap[hand[0]], rankMap[hand[1]], chart);
+              }
+            }
+          }
+        });
+
+        return chart;
+      };
     });
   </script>
 </head>
 <body ng-controller="PushFoldCtrl">
   <h1>Push Fold</h1>
 
-  <div class="input-group">
-    <span class="input-group-addon">Antes</span>
-    <div class="input-group-btn">
-      <button type="button" class="btn btn-default" ng-repeat="ante in antes" ng-class="{'btn-primary': selectedAntes == ante}" ng-click="setAntes(ante)">{{ antesLabels[ante] }}</button>
-    </div>
-  </div>
+  <rzslider rz-slider-model="antes_slider.value" rz-slider-options="antes_slider.options"></rzslider>
+  <rzslider rz-slider-model="position_slider.value" rz-slider-options="position_slider.options"></rzslider>
 
-  <div class="input-group">
-    <span class="input-group-addon">Stack size</span>
-    <div class="input-group-btn">
-      <button type="button" class="btn btn-default" ng-repeat="stackSize in stackSizes1" ng-class="{'btn-primary': selectedStackSize == stackSize}" ng-click="setStackSize(stackSize)">{{ stackSize }}</button>
-    </div>
-  </div>
-
-  <div class="input-group">
-    <span class="input-group-addon">Stack size</span>
-    <div class="input-group-btn">
-      <button type="button" class="btn btn-default" ng-repeat="stackSize in stackSizes2" ng-class="{'btn-primary': selectedStackSize == stackSize}" ng-click="setStackSize(stackSize)">{{ stackSize }}</button>
-    </div>
-  </div>
-
-  <div class="input-group">
-    <span class="input-group-addon">Stack size</span>
-    <div class="input-group-btn">
-      <button type="button" class="btn btn-default" ng-repeat="stackSize in stackSizes3" ng-class="{'btn-primary': selectedStackSize == stackSize}" ng-click="setStackSize(stackSize)">{{ stackSize }}</button>
-    </div>
-  </div>
-
-  <div class="input-group">
-    <span class="input-group-addon">Position</span>
-    <div class="input-group-btn">
-      <button type="button" class="btn btn-default" ng-repeat="position in positions" ng-class="{'btn-primary': selectedPosition == position}" ng-click="setPosition(position)">{{ position }}</button>
-    </div>
-  </div>
-
-  <div class="panel panel-default">
-    <div class="panel-heading">Open shove range</div>
-    <div class="panel-body">
-      {{ getData(selectedAntes, selectedStackSize, selectedPosition) }}
-    </div>
-  </div>
+  <table class="main-content-table">
+    <tr>
+      <td class="stack-size-slider">
+        <rzslider rz-slider-model="stack_size_slider.value" rz-slider-options="stack_size_slider.options"></rzslider>
+      </td>
+      <td>
+        <div class="panel panel-default range">
+          <div class="panel-heading">Open shove range for {{ stackSizes[stack_size_slider.value] }} stack on {{ positions[position_slider.value] }}</div>
+          <div class="panel-body">
+            <table border="1" class="hand-chart">
+              <tr>
+                <td></td>
+                <td>A</td>
+                <td>K</td>
+                <td>Q</td>
+                <td>J</td>
+                <td>T</td>
+                <td>9</td>
+                <td>8</td>
+                <td>7</td>
+                <td>6</td>
+                <td>5</td>
+                <td>4</td>
+                <td>3</td>
+                <td>2</td>
+              </tr>
+              <tr ng-repeat="chartRow in getChart(antes[antes_slider.value], stackSizes[stack_size_slider.value], positions[position_slider.value]) track by $index">
+                <td>{{ rankIndexMap[$index] }}</td>
+                <td ng-repeat="chartCell in chartRow track by $index" ng-class="{'push': chartCell == 1}"></td>
+              </tr>
+            </table>
+            <hr>
+            {{ getData(antes[antes_slider.value], stackSizes[stack_size_slider.value], positions[position_slider.value]) }}
+          </div>
+        </div>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>
