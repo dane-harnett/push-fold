@@ -1,0 +1,92 @@
+{
+  "1BB": {
+    "SB": {
+      "BB": ""
+    },
+    "BTN": {
+      "SB": "",
+      "BB": ""
+    }
+  },
+  "2BB": {
+    "SB": {
+      "BB": ""
+    },
+    "BTN": {
+      "SB": "",
+      "BB": ""
+    }
+  },
+  "3BB": {
+    "SB": {
+      "BB": ""
+    },
+    "BTN": {
+      "SB": "",
+      "BB": ""
+    }
+  },
+  "4BB": {
+    "SB": {
+      "BB": ""
+    },
+    "BTN": {
+      "SB": "",
+      "BB": ""
+    }
+  },
+  "5BB": {
+    "SB": {
+      "BB": ""
+    },
+    "BTN": {
+      "SB": "",
+      "BB": ""
+    }
+  },
+  "6BB": {
+    "SB": {
+      "BB": "73.8%, 22+ Jx+ T2s+ T5o+ 93s+ 96o+ 84s+ 86o+ 74s+ 76o 64s+ 54s"
+    },
+    "BTN": {
+      "SB": "40.9%, 22+ Ax+ K2s+ K6o+ Q5s+ Q9o+ J7s+ J9o+ T7s+ T9o 97s+ 87s 76s",
+      "BB": "58.7%, 22+ Kx+ Q2s+ Q4o+ J3s+ J7o+ T5s+ T8o+ 95s+ 98o 85s+ 87o 75s+ 64s+ 54s"
+    }
+  },
+  "7BB": {
+    "SB": {
+      "BB": "66.2%, 22+ Qx+ J2s+ J4o+ T3s+ T6o+ 95s+ 97o+ 85s+ 87o 75s+ 65s"
+    },
+    "BTN": {
+      "SB": "36.0%, 22+ Ax+ K2s+ K7o+ Q7s+ Q9o+ J8s+ JTo T8s+ 98s",
+      "BB": "49.9%, 22+ Kx+ Q2s+ Q7o+ J5s+ J8o+ T6s+ T9o 96s+ 86s+ 76s 65s"
+    }
+  },
+  "8BB": {
+    "SB": {
+      "BB": "60.8%, 22+ Qx+ J2s+ J5o+ T5s+ T7o+ 96s+ 98o 86s+ 76s"
+    },
+    "BTN": {
+      "SB": "32.4%, 22+ Ax+ K4s+ K8o+ Q8s+ QTo+ J9s+ JTo T9s",
+      "BB": "43.3%, 22+ Ax+ K2s+ K4o+ Q5s+ Q8o+ J7s+ J9o+ T7s+ T9o 97s+ 87s"
+    }
+  },
+  "9BB": {
+    "SB": {
+      "BB": "55.7%, 22+ Kx+ Q2s+ Q3o+ J3s+ J7o+ T6s+ T8o+ 97s+ 98o 87s"
+    },
+    "BTN": {
+      "SB": "30.0%, 22+ Ax+ K5s+ K9o+ Q9s+ QTo+ J9s+ T9s",
+      "BB": "37.3%, 22+ Ax+ K2s+ K6o+ Q6s+ Q9o+ J8s+ JTo T8s+ 98s"
+    }
+  },
+  "10BB": {
+    "SB": {
+      "BB": "52.0%, 22+ Kx+ Q2s+ Q5o+ J5s+ J7o+ T7s+ T8o+ 97s+ 87s"
+    },
+    "BTN": {
+      "SB": "28.8%, 22+ Ax+ K7s+ K9o+ Q9s+ QTo+ JTs",
+      "BB": "33.6%, 22+ Ax+ K3s+ K7o+ Q8s+ QTo+ J9s+ JTo T9s"
+    }
+  }
+}

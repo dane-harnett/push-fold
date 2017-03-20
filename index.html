@@ -30,8 +30,8 @@
       width: 100%;
     }
     .hand-chart td {
-      height: 16px;
-      width: 16px;
+      height: 24px;
+      width: 24px;
       text-align: center;
     }
     .push {
@@ -39,6 +39,7 @@
     }
   </style>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.14.3/ui-bootstrap-tpls.js"></script>
   <script src="https://rawgit.com/rzajac/angularjs-slider/master/dist/rzslider.js"></script>
@@ -49,7 +50,16 @@
     app.controller('PushFoldCtrl', function ($scope, $http) {
       $scope.antes = ['0', '10', '125', '20'];
       $scope.positions = ['SB', 'BTN', 'CO', 'HJ', 'BTN3', 'BTN4', 'BTN5', 'BTN6'];
+      $scope.callPositions = ['BB', 'SB', 'BTN', 'CO', 'HJ', 'BTN3', 'BTN4', 'BTN5', 'BTN6'];
       $scope.stackSizes = ['1BB', '2BB', '3BB', '4BB', '5BB', '6BB', '7BB', '8BB', '9BB', '10BB', '11BB', '12BB', '13BB', '14BB', '15BB', '16BB', '17BB', '18BB', '19BB', '20BB'];
+
+      $scope.push_call_slider = {
+        value: 0,
+        options: {
+          showTicksValues: true,
+          stepsArray: ['PUSH', 'CALL']
+        }
+      };
 
       $scope.antes_slider = {
         value: 0,
@@ -68,7 +78,7 @@
         }
       };
 
-      $scope.position_slider = {
+      $scope.push_position_slider = {
         value: 0,
         options: {
           showTicksValues: true,
@@ -76,31 +86,82 @@
         }
       };
 
-      $scope.data = {};
+      $scope.call_position_slider = {
+        minValue: 0,
+        maxValue: 1,
+        options: {
+          showTicksValues: true,
+          stepsArray: ['BB', 'SB', 'BTN', 'CO', 'HJ', 'BTN3', 'BTN4', 'BTN5', 'BTN6']
+        }
+      };
 
-      $http.get('0-antes.json')
+      $scope.data = {
+        push: {},
+        call: {}
+      };
+
+      var fieldbook = 'https://api.fieldbook.com/v1/568d7f3aafe70c03003a04a1';
+
+      $http.get(fieldbook + '/open_push_no_antes')
         .then(function(res){
-          $scope.data['0'] = res.data;
+          $scope.data.push['0'] = res.data;
         });
-      $http.get('10-antes.json')
+      $http.get(fieldbook + '/open_push_10_antes')
         .then(function(res){
-          $scope.data['10'] = res.data;
+          $scope.data.push['10'] = res.data;
         });
-      $http.get('125-antes.json')
+      $http.get(fieldbook + '/open_push_125_antes')
         .then(function(res){
-          $scope.data['125'] = res.data;
+          $scope.data.push['125'] = res.data;
         });
-      $http.get('20-antes.json')
+      $http.get(fieldbook + '/open_push_20_antes')
         .then(function(res){
-          $scope.data['20'] = res.data;
+          $scope.data.push['20'] = res.data;
+        });
+      $http.get('call-10-antes.json')
+        .then(function(res){
+          $scope.data.call['10'] = res.data;
         });
 
-      $scope.getData = function(antes, stackSize, position) {
-        if (typeof $scope.data[antes] === 'undefined') {
+      $scope.getData = function(pushCall, antes, stackSize, heroPosition) {
+        var pushCall = $scope.push_call_slider.value,
+          antes = $scope.antes[$scope.antes_slider.value],
+          stackSize = $scope.stackSizes[$scope.stack_size_slider.value],
+          heroPosition,
+          villainPosition;
+
+        if (pushCall === 0) {
+          if (typeof $scope.data.push[antes] === 'undefined') {
+            return '';
+          }
+
+          var result = _.findWhere($scope.data.push[antes], {stack_size: stackSize});
+
+          heroPosition = $scope.positions[$scope.push_position_slider.value];
+
+          return result[heroPosition.toLowerCase()];
+        }
+
+        if (typeof $scope.data.call[antes] === 'undefined') {
           return '';
         }
 
-        return $scope.data[antes][stackSize][position];
+        if (typeof $scope.data.call[antes][stackSize] === 'undefined') {
+          return '';
+        }
+
+        heroPosition = $scope.callPositions[$scope.call_position_slider.minValue];
+        villainPosition = $scope.callPositions[$scope.call_position_slider.maxValue];
+
+        if (typeof $scope.data.call[antes][stackSize][villainPosition] === 'undefined') {
+          return '';
+        }
+
+        if (typeof $scope.data.call[antes][stackSize][villainPosition][heroPosition] === 'undefined') {
+          return '';
+        }
+
+        return $scope.data.call[antes][stackSize][villainPosition][heroPosition];
       };
 
       $scope.rankIndexMap = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
@@ -121,11 +182,7 @@
         [0,0,0,0,0,0,0,0,0,0,0,0,0]
       ];
 
-      $scope.getChart = function(antes, stackSize, position) {
-        if (typeof $scope.data[antes] === 'undefined') {
-          return '';
-        }
-
+      $scope.getChart = function() {
         var resetChart = function(chart) {
           for (var i = 0; i <= 12; i++) {
             for (var j = 0; j <= 12; j++) {
@@ -137,6 +194,12 @@
 
         chart = resetChart(chart);
 
+        var range = $scope.getData();
+
+        if (range === '' || typeof range === 'undefined') {
+          return chart;
+        }
+
         var selectAllHands = function(chart) {
           for (var i = 0; i <= 12; i++) {
             for (var j = 0; j <= 12; j++) {
@@ -146,7 +209,6 @@
           return chart;
         };
 
-        var range = $scope.getData(antes, stackSize, position);
         var split = range.split(',');
         var hands = split[1].split(' ');
 
@@ -209,8 +271,12 @@
         };
 
         hands.forEach(function(hand) {
-          if (hand === 'Any-two') {
+          if (hand === 'Any-two' || hand === 'Any') {
             return selectAllHands(chart);
+          }
+
+          if (hand === 'two') {
+            return chart;
           }
 
           if (hand[0] === hand[1]) {
@@ -252,8 +318,11 @@
 <body ng-controller="PushFoldCtrl">
   <h1>Push Fold</h1>
 
+  <rzslider rz-slider-model="push_call_slider.value" rz-slider-options="push_call_slider.options"></rzslider>
   <rzslider rz-slider-model="antes_slider.value" rz-slider-options="antes_slider.options"></rzslider>
-  <rzslider rz-slider-model="position_slider.value" rz-slider-options="position_slider.options"></rzslider>
+  <h4>Position(s)</h4>
+  <rzslider ng-if="push_call_slider.value == 0" rz-slider-model="push_position_slider.value" rz-slider-options="push_position_slider.options"></rzslider>
+  <rzslider ng-if="push_call_slider.value == 1" rz-slider-model="call_position_slider.minValue" rz-slider-high="call_position_slider.maxValue" rz-slider-options="call_position_slider.options"></rzslider>
 
   <table class="main-content-table">
     <tr>
@@ -262,7 +331,7 @@
       </td>
       <td>
         <div class="panel panel-default range">
-          <div class="panel-heading">Open shove range for {{ stackSizes[stack_size_slider.value] }} stack on {{ positions[position_slider.value] }}</div>
+          <div class="panel-heading">Range</div>
           <div class="panel-body">
             <table border="1" class="hand-chart">
               <tr>
@@ -281,13 +350,13 @@
                 <td>3</td>
                 <td>2</td>
               </tr>
-              <tr ng-repeat="chartRow in getChart(antes[antes_slider.value], stackSizes[stack_size_slider.value], positions[position_slider.value]) track by $index">
+              <tr ng-repeat="chartRow in getChart() track by $index">
                 <td>{{ rankIndexMap[$index] }}</td>
                 <td ng-repeat="chartCell in chartRow track by $index" ng-class="{'push': chartCell == 1}"></td>
               </tr>
             </table>
             <hr>
-            {{ getData(antes[antes_slider.value], stackSizes[stack_size_slider.value], positions[position_slider.value]) }}
+            {{ getData() }}
           </div>
         </div>
       </td>
